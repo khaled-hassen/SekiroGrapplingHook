@@ -21,14 +21,17 @@ private:
 	class UCameraComponent* FollowCamera;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Setup")
-	float MaxGrappelingDistance = 2000.f;
+	float MaxGrapplingDistance = 2000.f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Setup")
-	TSubclassOf<AGrappelingPoint> GrappelingPointBlueprint;
+	TSubclassOf<AGrapplingPoint> GrapplingPointBlueprint;
 
-	TArray<float> Angles;
-	TArray<class AGrappelingPoint*> GrappelingPoints;
 protected:
+	UPROPERTY(BlueprintReadOnly, Category = "Setup")
+	TArray<float> Angles;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Setup")
+	TArray<class AGrapplingPoint*> GrapplingPoints;
 
 	/** Called for forwards/backward input */
 	void MoveForward(float Value);
@@ -72,10 +75,10 @@ public:
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
 	UFUNCTION(BlueprintCallable, Category = "GamePlay")
-	class AGrappelingPoint* GetClosestGrappelingPoint() const;
+	class AGrapplingPoint* GetClosestGrapplingPoint() const;
 
-	void AddToGrappelingPoints(class AGrappelingPoint* GrappelingPoint);
-	void RemoveFromGrappelingPoints(class AGrappelingPoint* GrappelingPoint);
+	void AddToGrapplingPoints(class AGrapplingPoint* GrapplingPoint);
+	void RemoveFromGrapplingPoints(class AGrapplingPoint* GrapplingPoint);
 
 	UFUNCTION(BlueprintCallable, Category = "GamePlay")
 	void Grappel();

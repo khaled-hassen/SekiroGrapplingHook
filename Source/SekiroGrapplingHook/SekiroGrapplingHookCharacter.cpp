@@ -8,7 +8,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
-#include "GrappelingPoint.h"
+#include "GrapplingPoint.h"
 #include "Kismet/GameplayStatics.h"
 
 //////////////////////////////////////////////////////////////////////////
@@ -121,26 +121,26 @@ void ASekiroGrapplingHookCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (ensure(GrappelingPointBlueprint))
+	if (ensure(GrapplingPointBlueprint))
 	{
-		TArray<AActor*>SpawnedGrappelingPoints;
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), GrappelingPointBlueprint, SpawnedGrappelingPoints);
+		TArray<AActor*>SpawnedGrapplingPoints;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), GrapplingPointBlueprint, SpawnedGrapplingPoints);
 
-		if (SpawnedGrappelingPoints.Num() != 0)
+		if (SpawnedGrapplingPoints.Num() != 0)
 		{
-			for (AActor* GrappelingPointActor : SpawnedGrappelingPoints)
+			for (AActor* GrapplingPointActor : SpawnedGrapplingPoints)
 			{
-				AGrappelingPoint* GrappelingPoint = Cast<AGrappelingPoint>(GrappelingPointActor);
+				AGrapplingPoint* GrapplingPoint = Cast<AGrapplingPoint>(GrapplingPointActor);
 
-				if (GrappelingPoint)
+				if (GrapplingPoint)
 				{
-					if (GrappelingPoint->WasRecentlyRendered())
+					if (GrapplingPoint->WasRecentlyRendered())
 					{
-						AddToGrappelingPoints(GrappelingPoint);
+						AddToGrapplingPoints(GrapplingPoint);
 					}
 					else
 					{
-						RemoveFromGrappelingPoints(GrappelingPoint);
+						RemoveFromGrapplingPoints(GrapplingPoint);
 					}
 				}
 			}
@@ -148,57 +148,62 @@ void ASekiroGrapplingHookCharacter::Tick(float DeltaTime)
 	}
 }
 
-void ASekiroGrapplingHookCharacter::AddToGrappelingPoints(class AGrappelingPoint* GrappelingPoint)
+void ASekiroGrapplingHookCharacter::AddToGrapplingPoints(class AGrapplingPoint* GrapplingPoint)
 {
-	float Distance = (GetActorLocation() - GrappelingPoint->GetActorLocation()).Size();
+	float Distance = (GetActorLocation() - GrapplingPoint->GetActorLocation()).Size();
 
-	if (Distance <= MaxGrappelingDistance)
+	if (Distance <= MaxGrapplingDistance)
 	{
 		FVector ControllerForwardVector = FVector(GetControlRotation().Vector().X, GetControlRotation().Vector().Y, 0.f).GetSafeNormal();
-		FVector GrappelingPointDirection = FVector((GetActorLocation() - GrappelingPoint->GetActorLocation()).X,
-			(GetActorLocation() - GrappelingPoint->GetActorLocation()).Y, 0.f).GetSafeNormal();
+		FVector GrapplingPointDirection = FVector((GetActorLocation() - GrapplingPoint->GetActorLocation()).X,
+			(GetActorLocation() - GrapplingPoint->GetActorLocation()).Y, 0.f).GetSafeNormal();
 
-		float Angle = FMath::Acos(FMath::Abs(FVector::DotProduct(ControllerForwardVector, GrappelingPointDirection)));
+		float Angle = FMath::Acos(FMath::Abs(FVector::DotProduct(ControllerForwardVector, GrapplingPointDirection)));
 
-		if (GrappelingPoints.Contains(GrappelingPoint))
+		if (GrapplingPoints.Contains(GrapplingPoint))
 		{
-			int32 Index = GrappelingPoints.Find(GrappelingPoint);
+			int32 Index = GrapplingPoints.Find(GrapplingPoint);
 			Angles[Index] = Angle;
 		}
 		else
 		{
-			GrappelingPoints.Add(GrappelingPoint);
+			GrapplingPoints.Add(GrapplingPoint);
 			Angles.Add(Angle);
 		}
 	}
 }
 
-void ASekiroGrapplingHookCharacter::RemoveFromGrappelingPoints(class AGrappelingPoint* GrappelingPoint)
+void ASekiroGrapplingHookCharacter::RemoveFromGrapplingPoints(class AGrapplingPoint* GrapplingPoint)
 {
-	if (GrappelingPoints.Contains(GrappelingPoint))
+	if (GrapplingPoints.Contains(GrapplingPoint))
 	{
-		int32 Index = GrappelingPoints.Find(GrappelingPoint);
-		GrappelingPoints.RemoveAt(Index);
+		int32 Index = GrapplingPoints.Find(GrapplingPoint);
+		GrapplingPoints.RemoveAt(Index);
 		Angles.RemoveAt(Index);
 	}
 }
 
-AGrappelingPoint* ASekiroGrapplingHookCharacter::GetClosestGrappelingPoint() const
+AGrapplingPoint* ASekiroGrapplingHookCharacter::GetClosestGrapplingPoint() const
 {
-	float MinAngle = Angles[0];
-	for (const float Angle : Angles)
+	if ((Angles.Num() != 0) && (GrapplingPoints.Num() != 0))
 	{
-		MinAngle = (Angle < MinAngle) ? Angle : MinAngle;
+		float MinAngle = Angles[0];
+		for (const float Angle : Angles)
+		{
+			MinAngle = (Angle < MinAngle) ? Angle : MinAngle;
+		}
+
+		return GrapplingPoints[Angles.Find(MinAngle)];
 	}
 
-	return GrappelingPoints[Angles.Find(MinAngle)];
+	return nullptr;
 }
 
 void ASekiroGrapplingHookCharacter::Grappel()
 {
-	AGrappelingPoint* GrappelingPoint = GetClosestGrappelingPoint();
+	AGrapplingPoint* GrapplingPoint = GetClosestGrapplingPoint();
 
-	if (GrappelingPoint)
+	if (GrapplingPoint)
 	{
 		
 	}

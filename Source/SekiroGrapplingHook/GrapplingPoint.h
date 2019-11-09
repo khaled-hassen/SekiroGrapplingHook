@@ -4,10 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "GrappelingPoint.generated.h"
+#include "GrapplingPoint.generated.h"
 
 UCLASS()
-class SEKIROGRAPPLINGHOOK_API AGrappelingPoint : public AActor
+class SEKIROGRAPPLINGHOOK_API AGrapplingPoint : public AActor
 {
 	GENERATED_BODY()
 	
@@ -20,7 +20,7 @@ protected:
 
 public:	
 	// Sets default values for this actor's properties
-	AGrappelingPoint();
+	AGrapplingPoint();
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
