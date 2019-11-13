@@ -26,6 +26,15 @@ private:
 	UPROPERTY(EditDefaultsOnly, Category = "Setup")
 	TSubclassOf<AGrapplingPoint> GrapplingPointBlueprint;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	class UCableComponent* GrapplingHook = nullptr;
+
+	UPROPERTY()
+	class UTimelineComponent* ThrowGrapplingHookTimeline = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
+	UCurveFloat* ThrowTimeCurve = nullptr;
+
 protected:
 	UPROPERTY(BlueprintReadOnly, Category = "Setup")
 	TArray<float> Angles;
@@ -81,6 +90,12 @@ public:
 	void RemoveFromGrapplingPoints(class AGrapplingPoint* GrapplingPoint);
 
 	UFUNCTION(BlueprintCallable, Category = "GamePlay")
-	void Grappel();
+	void Grapple();
+
+	UFUNCTION(BlueprintCallable, Category = "GamePlay")
+	void LaunchCharacterTowardsTarget();
+
+	UFUNCTION()
+	void ThrowGrapplingHook(float Value);
 };
 

@@ -8,8 +8,11 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "GrapplingPoint.h"
 #include "Kismet/GameplayStatics.h"
+#include "CableComponent.h"
+#include "Components/TimelineComponent.h"
 
 //////////////////////////////////////////////////////////////////////////
 // ASekiroGrapplingHookCharacter
@@ -50,6 +53,15 @@ ASekiroGrapplingHookCharacter::ASekiroGrapplingHookCharacter()
 
 	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
+
+	// GrapplingHook setup
+	GrapplingHook = CreateDefaultSubobject<UCableComponent>(TEXT("GrapplingHook"));
+	GrapplingHook->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, "GrapplingHook");
+	GrapplingHook->bVisible = false;
+	GrapplingHook->EndLocation = FVector::ZeroVector;
+	GrapplingHook->CableLength = 0;
+
+	ThrowGrapplingHookTimeline = CreateDefaultSubobject<UTimelineComponent>("ThrowGrapplingHookTimeline");
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -72,6 +84,9 @@ void ASekiroGrapplingHookCharacter::SetupPlayerInputComponent(class UInputCompon
 	PlayerInputComponent->BindAxis("TurnRate", this, &ASekiroGrapplingHookCharacter::TurnAtRate);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &ASekiroGrapplingHookCharacter::LookUpAtRate);
+
+	// Grappling input
+	PlayerInputComponent->BindAction("Grapple", IE_Pressed, this, &ASekiroGrapplingHookCharacter::Grapple);
 }
 
 
@@ -199,12 +214,66 @@ AGrapplingPoint* ASekiroGrapplingHookCharacter::GetClosestGrapplingPoint() const
 	return nullptr;
 }
 
-void ASekiroGrapplingHookCharacter::Grappel()
+void ASekiroGrapplingHookCharacter::Grapple()
 {
 	AGrapplingPoint* GrapplingPoint = GetClosestGrapplingPoint();
 
 	if (GrapplingPoint)
 	{
-		
+		GrapplingHook->SetVisibility(true);
+
+		if (ensure(ThrowTimeCurve))
+		{
+			// get the ThrowHook time
+			float MinTime = 0.f, CurveLength = 0.f;
+			ThrowTimeCurve->GetTimeRange(MinTime, CurveLength);
+
+			// setup the Timeline
+			ThrowGrapplingHookTimeline->SetLooping(false);
+			ThrowGrapplingHookTimeline->SetIgnoreTimeDilation(true);
+			ThrowGrapplingHookTimeline->SetTimelineLength(CurveLength);
+
+			// set the ThrowHookDelegate to be bound to ThrowGrapplingHook
+			FOnTimelineFloat ThrowHookDelegate;
+			ThrowHookDelegate.BindUFunction(this, "ThrowGrapplingHook");
+			ThrowGrapplingHookTimeline->AddInterpFloat(ThrowTimeCurve, ThrowHookDelegate, "Value");
+
+			// launch the player when the grappling hook is at target location
+			FOnTimelineEvent TimelineFinished;
+			TimelineFinished.BindUFunction(this, FName("LaunchCharacterTowardsTarget"));
+			ThrowGrapplingHookTimeline->SetTimelineFinishedFunc(TimelineFinished);
+
+			ThrowGrapplingHookTimeline->PlayFromStart();
+		}
+	}
+}
+
+void ASekiroGrapplingHookCharacter::LaunchCharacterTowardsTarget()
+{
+	AGrapplingPoint* Target = GetClosestGrapplingPoint();
+	if (Target && GrapplingHook)
+	{
+		FVector LaunchVelocity = FVector::ZeroVector;
+		bool bHasSolution = UGameplayStatics::SuggestProjectileVelocity_CustomArc(this,
+			LaunchVelocity,
+			GetActorLocation(), 
+			Target->GetActorLocation(),
+			0.0f, 0.4f);
+
+		if (bHasSolution)
+		{
+			LaunchCharacter(LaunchVelocity, true, true);
+			GrapplingHook->SetVisibility(false);
+			GrapplingHook->SetWorldLocation(GetMesh()->GetSocketLocation("GrapplingHook"));
+		}
+	}
+}
+
+void ASekiroGrapplingHookCharacter::ThrowGrapplingHook(float Value)
+{
+	if (GrapplingHook && GetClosestGrapplingPoint())
+	{
+		FVector NewLocation = FMath::Lerp<FVector, float>(GrapplingHook->GetComponentLocation(), GetClosestGrapplingPoint()->GetActorLocation(), Value);
+		GrapplingHook->SetWorldLocation(NewLocation);
 	}
 }
