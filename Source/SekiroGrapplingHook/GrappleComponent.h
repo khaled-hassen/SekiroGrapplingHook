@@ -47,6 +47,12 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	// Finds all visible grappling points
+	void FindGrapplingPoints();
+
+	//Change the color of the closest grappling point
+	void ChangeColor(AGrapplingPoint* GrapplingPoint);
+
 	UFUNCTION(BlueprintCallable)
 	class AGrapplingPoint* GetClosestGrapplingPoint() const;
 

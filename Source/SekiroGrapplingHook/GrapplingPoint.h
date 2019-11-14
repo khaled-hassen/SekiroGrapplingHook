@@ -12,7 +12,14 @@ class SEKIROGRAPPLINGHOOK_API AGrapplingPoint : public AActor
 	GENERATED_BODY()
 	
 private:	
+	UPROPERTY(VisibleAnywhere)
+	UStaticMeshComponent* Point = nullptr;
 
+	UPROPERTY(EditDefaultsOnly, Category = "GamePlay")
+	UMaterialInstance* BaseMaterial = nullptr;
+
+	UPROPERTY(EditDefaultsOnly, Category = "GamePlay")
+	UMaterialInstance* GrapplingMaterial = nullptr;
 
 protected:
 	// Called when the game starts or when spawned
@@ -24,4 +31,7 @@ public:
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	void ChangeToBaseMat();
+	void ChangeToGrapplingMat();
 };

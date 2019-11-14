@@ -44,12 +44,17 @@ void UGrappleComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	FindGrapplingPoints();
+}
+
+void UGrappleComponent::FindGrapplingPoints()
+{
 	if (!bIsGrappling)
 	{
 		if (ensure(GrapplingPointBlueprint))
 		{
 			TArray<AActor*>SpawnedGrapplingPoints;
-			UGameplayStatics::GetAllActorsOfClass(GetWorld(), GrapplingPointBlueprint, SpawnedGrapplingPoints);
+			UGameplayStatics::GetAllActorsOfClass(this, GrapplingPointBlueprint, SpawnedGrapplingPoints);
 
 			if (SpawnedGrapplingPoints.Num() != 0)
 			{
@@ -67,10 +72,20 @@ void UGrappleComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 						{
 							RemoveFromGrapplingPoints(GrapplingPoint);
 						}
+						ChangeColor(GrapplingPoint);
 					}
 				}
 			}
 		}
+	}
+}
+
+void UGrappleComponent::ChangeColor(AGrapplingPoint* GrapplingPoint)
+{
+	GrapplingPoint->ChangeToBaseMat();
+	if (GetClosestGrapplingPoint())
+	{
+		GetClosestGrapplingPoint()->ChangeToGrapplingMat();
 	}
 }
 
@@ -178,11 +193,11 @@ void UGrappleComponent::LaunchCharacterTowardsTarget()
 			LaunchVelocity,
 			Player->GetActorLocation(),
 			Target->GetActorLocation(),
-			0.0f, 0.6f);
+			0.0f, 0.5f);
 
 		if (bHasSolution)
 		{
-			Player->LaunchCharacter(LaunchVelocity, true, true);
+			Player->LaunchCharacter(LaunchVelocity * GetWorld()->GetDeltaSeconds() * 65, true, true);
 			GrapplingHook->SetVisibility(false);
 			bIsGrappling = false;
 			GrapplingHook->SetWorldLocation(Player->GetMesh()->GetSocketLocation("GrapplingHook"));
