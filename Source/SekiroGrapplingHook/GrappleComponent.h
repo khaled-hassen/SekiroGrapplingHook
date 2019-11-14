@@ -47,7 +47,9 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	UFUNCTION(BlueprintCallable)
 	class AGrapplingPoint* GetClosestGrapplingPoint() const;
+
 	void AddToGrapplingPoints(class AGrapplingPoint* GrapplingPoint);
 	void RemoveFromGrapplingPoints(class AGrapplingPoint* GrapplingPoint);
 	void Grapple();

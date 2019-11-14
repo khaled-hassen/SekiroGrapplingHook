@@ -88,16 +88,18 @@ void UGrappleComponent::AddToGrapplingPoints(class AGrapplingPoint* GrapplingPoi
 			(Player->GetActorLocation() - GrapplingPoint->GetActorLocation()).Y, 0.f).GetSafeNormal();
 
 		float Angle = FMath::Acos(FMath::Abs(FVector::DotProduct(ControllerForwardVector, GrapplingPointDirection)));
-
-		if (GrapplingPoints.Contains(GrapplingPoint))
+		if (FVector::DotProduct(-ControllerForwardVector, GrapplingPointDirection) >= 0)
 		{
-			int32 Index = GrapplingPoints.Find(GrapplingPoint);
-			Angles[Index] = Angle;
-		}
-		else
-		{
-			GrapplingPoints.Add(GrapplingPoint);
-			Angles.Add(Angle);
+			if (GrapplingPoints.Contains(GrapplingPoint))
+			{
+				int32 Index = GrapplingPoints.Find(GrapplingPoint);
+				Angles[Index] = Angle;
+			}
+			else
+			{
+				GrapplingPoints.Add(GrapplingPoint);
+				Angles.Add(Angle);
+			}
 		}
 	}
 }
@@ -176,7 +178,7 @@ void UGrappleComponent::LaunchCharacterTowardsTarget()
 			LaunchVelocity,
 			Player->GetActorLocation(),
 			Target->GetActorLocation(),
-			0.0f, 0.4f);
+			0.0f, 0.6f);
 
 		if (bHasSolution)
 		{
