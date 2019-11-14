@@ -20,27 +20,10 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Setup")
-	float MaxGrapplingDistance = 2000.f;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Setup")
-	TSubclassOf<AGrapplingPoint> GrapplingPointBlueprint;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
-	class UCableComponent* GrapplingHook = nullptr;
-
-	UPROPERTY()
-	class UTimelineComponent* ThrowGrapplingHookTimeline = nullptr;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Gameplay")
-	UCurveFloat* ThrowTimeCurve = nullptr;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class UGrappleComponent* GrappleComponent;
 
 protected:
-	UPROPERTY(BlueprintReadOnly, Category = "Setup")
-	TArray<float> Angles;
-
-	UPROPERTY(BlueprintReadOnly, Category = "Setup")
-	TArray<class AGrapplingPoint*> GrapplingPoints;
 
 	/** Called for forwards/backward input */
 	void MoveForward(float Value);
@@ -83,19 +66,5 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
-	UFUNCTION(BlueprintCallable, Category = "GamePlay")
-	class AGrapplingPoint* GetClosestGrapplingPoint() const;
-
-	void AddToGrapplingPoints(class AGrapplingPoint* GrapplingPoint);
-	void RemoveFromGrapplingPoints(class AGrapplingPoint* GrapplingPoint);
-
-	UFUNCTION(BlueprintCallable, Category = "GamePlay")
-	void Grapple();
-
-	UFUNCTION(BlueprintCallable, Category = "GamePlay")
-	void LaunchCharacterTowardsTarget();
-
-	UFUNCTION()
-	void ThrowGrapplingHook(float Value);
 };
 
